@@ -1,0 +1,29 @@
+server:
+  port: 9003 # Assign a unique port for each service
+
+spring:
+  application:
+    name: trip-management-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/trackstar_db
+    username: user
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect # Custom dialect for PostGIS/Timescale may be needed
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: trip-management
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
