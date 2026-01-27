@@ -4,13 +4,8 @@ on:
   push:
     branches: [ main ]
 
-concurrency:
-  group: docker-build
-  cancel-in-progress: false
-
 jobs:
-  # Step 1: Build all Maven modules
-  build:
+  docker:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,26 +14,21 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Build all modules
+      - name: Build with Maven
         run: mvn -f backend/pom.xml clean package -DskipTests
-
-  # Step 2: Docker build and push (matrix)
-  docker:
-    needs: build
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [eureka-server, api-gateway, auth-service, fleet-service]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Log in to Docker Hub
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend/${{ matrix.service }}
-          push: true
-          tags: trackstar/${{ matrix.service }}:latest
+      - name: Build and push Docker images
+        run: |
+          docker build -t trackstar/eureka-server:latest ./backend/eureka-server
+          docker build -t trackstar/api-gateway:latest ./backend/api-gateway
+          docker build -t trackstar/auth-service:latest ./backend/auth-service
+          docker build -t trackstar/fleet-service:latest ./backend/fleet-service
+          # docker push trackstar/eureka-server:latest
+          # docker push trackstar/api-gateway:latest
+          # docker push trackstar/auth-service:latest
+          # docker push trackstar/fleet-service:latest
+          # ... and so on
