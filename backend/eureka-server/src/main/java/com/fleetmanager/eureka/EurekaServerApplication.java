@@ -1,4 +1,4 @@
-package com.trackstar.eurekaserver;
+package com.fleetmanager.eureka;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

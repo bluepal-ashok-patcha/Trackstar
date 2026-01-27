@@ -1,4 +1,4 @@
-package com.trackstar.apigateway.config;
+package com.fleetmanager.gateway.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
