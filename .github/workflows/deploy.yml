@@ -1,0 +1,21 @@
+name: Deployment
+
+on:
+  workflow_run:
+    workflows: ["Docker Build and Push"]
+    types:
+      - completed
+
+env:
+  CLOUD_PROVIDER: aws # placeholder
+  REGION: us-east-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Cloud
+        run: |
+          echo "Deploying to $CLOUD_PROVIDER in $REGION"
+          # Add deployment commands here

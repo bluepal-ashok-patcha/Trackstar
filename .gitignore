@@ -1,0 +1,21 @@
+# Maven
+target/
+*.war
+*.zip
+*.tar.gz
+*.rar
+
+# IDE
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+bin/
+.DS_Store
+
+# Log files
+*.log
+
+# Docker
+.docker/

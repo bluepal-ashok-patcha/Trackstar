@@ -1,0 +1,31 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Build with Maven
+        run: mvn -f backend/pom.xml clean package -DskipTests
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push Docker images
+        run: |
+          docker build -t trackstar/eureka-server:latest ./backend/eureka-server
+          docker build -t trackstar/api-gateway:latest ./backend/api-gateway
+          docker build -t trackstar/auth-service:latest ./backend/auth-service
+          docker build -t trackstar/fleet-service:latest ./backend/fleet-service
+          # docker push trackstar/eureka-server:latest
+          # ... and so on
