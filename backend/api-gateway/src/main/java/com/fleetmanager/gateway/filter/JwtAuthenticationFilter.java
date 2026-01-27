@@ -1,13 +1,13 @@
-package com.trackstar.apigateway.filter;
+package com.fleetmanager.gateway.filter;
 
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TenantContextFilter extends AbstractGatewayFilterFactory<TenantContextFilter.Config> {
+public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAuthenticationFilter.Config> {
 
-    public TenantContextFilter() {
+    public JwtAuthenticationFilter() {
         super(Config.class);
     }
 

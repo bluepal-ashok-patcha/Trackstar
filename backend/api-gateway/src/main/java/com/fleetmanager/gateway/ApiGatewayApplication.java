@@ -1,4 +1,4 @@
-package com.trackstar.apigateway;
+package com.fleetmanager.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
