@@ -27,8 +27,8 @@ jobs:
           docker build -t trackstar/api-gateway:latest ./backend/api-gateway
           docker build -t trackstar/auth-service:latest ./backend/auth-service
           docker build -t trackstar/fleet-service:latest ./backend/fleet-service
-          # docker push trackstar/eureka-server:latest
-          # docker push trackstar/api-gateway:latest
-          # docker push trackstar/auth-service:latest
-          # docker push trackstar/fleet-service:latest
+          docker push trackstar/eureka-server:latest
+          docker push trackstar/api-gateway:latest
+          docker push trackstar/auth-service:latest
+          docker push trackstar/fleet-service:latest
           # ... and so on
