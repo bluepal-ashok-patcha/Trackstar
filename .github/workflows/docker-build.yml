@@ -23,12 +23,12 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push Docker images
         run: |
-          docker build -t secrets.DOCKERHUB_USERNAME/eureka-server:latest ./backend/eureka-server
-          docker build -t secrets.DOCKERHUB_USERNAME/api-gateway:latest ./backend/api-gateway
-          docker build -t secrets.DOCKERHUB_USERNAME/auth-service:latest ./backend/auth-service
-          docker build -t secrets.DOCKERHUB_USERNAME/fleet-service:latest ./backend/fleet-service
-          docker push secrets.DOCKERHUB_USERNAME/eureka-server:latest
-          docker push secrets.DOCKERHUB_USERNAME/api-gateway:latest
-          docker push secrets.DOCKERHUB_USERNAME/auth-service:latest
-          docker push secrets.DOCKERHUB_USERNAME/fleet-service:latest
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/eureka-server:latest ./backend/eureka-server
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/api-gateway:latest ./backend/api-gateway
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:latest ./backend/auth-service
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/fleet-service:latest ./backend/fleet-service
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/eureka-server:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/api-gateway:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/fleet-service:latest
           # ... and so on
