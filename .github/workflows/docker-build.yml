@@ -14,21 +14,32 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      
+      # This builds the JARs for api-gateway, auth-service, etc.
       - name: Build with Maven
         run: mvn -f backend/pom.xml clean package -DskipTests
+      
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
       - name: Build and push Docker images
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/eureka-server:latest ./backend/eureka-server
+          # --- FIX FOR EUREKA SERVER (Multi-Stage) ---
+          # We set the context to "./backend" so it can find the Parent POM
+          docker build -f backend/eureka-server/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/eureka-server:latest ./backend
+          
+          # --- OTHER SERVICES (Single-Stage) ---
+          # These still use the JARs built by the 'Build with Maven' step above, 
+          # so we keep their context specific to their folder.
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/api-gateway:latest ./backend/api-gateway
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:latest ./backend/auth-service
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/fleet-service:latest ./backend/fleet-service
+          
+          # Push all images
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/eureka-server:latest
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/api-gateway:latest
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:latest
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/fleet-service:latest
-          # ... and so on
