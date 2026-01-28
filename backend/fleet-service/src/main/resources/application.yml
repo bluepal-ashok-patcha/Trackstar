@@ -2,9 +2,9 @@ spring:
   application:
     name: fleet-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/trackstar}
-    username: ${SPRING_DATASOURCE_USERNAME:trackstar_user}
-    password: ${SPRING_DATASOURCE_PASSWORD:trackstar_password}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/trackstar_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:ashok}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -23,4 +23,4 @@ eureka:
       defaultZone: http://eureka-user:${EUREKA_PASSWORD:secret}@localhost:8761/eureka/
 
 server:
-  port: 8082
+  port: 8083

@@ -3,8 +3,8 @@ spring:
     name: auth-service
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/trackstar}
-    username: ${SPRING_DATASOURCE_USERNAME:trackstar_user}
-    password: ${SPRING_DATASOURCE_PASSWORD:trackstar_password}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:ashok}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
