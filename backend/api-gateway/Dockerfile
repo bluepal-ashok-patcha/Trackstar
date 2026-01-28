@@ -9,7 +9,7 @@ COPY common common
 # 2. Copy the Service Source
 COPY api-gateway api-gateway
 
-# 3. Build only api-gateway
+# 3. Build only api-gatewayy
 RUN mvn clean package -pl api-gateway -am -DskipTests
 
 # Stage 2: Runtime
