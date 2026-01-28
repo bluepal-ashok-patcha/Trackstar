@@ -2,14 +2,10 @@
 FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
 
-# 1. Copy Parent POM and Common Module (CRITICAL)
-COPY pom.xml .
-COPY common common
+# FIX: Copy everything
+COPY . .
 
-# 2. Copy the Service Source
-COPY auth-service auth-service
-
-# 3. Build only auth-service (and its dependencies)
+# Build only auth-service
 RUN mvn clean package -pl auth-service -am -DskipTests
 
 # Stage 2: Runtime

@@ -2,14 +2,11 @@
 FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
 
-# 1. Copy Parent POM and Common Module
-COPY pom.xml .
-COPY common common
+# FIX: Copy everything (common, eureka, auth, fleet, etc.)
+# This satisfies Maven's requirement to see all modules listed in parent pom
+COPY . .
 
-# 2. Copy the Service Source
-COPY api-gateway api-gateway
-
-# 3. Build only api-gatewayy
+# Build only api-gateway
 RUN mvn clean package -pl api-gateway -am -DskipTests
 
 # Stage 2: Runtime
