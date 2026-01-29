@@ -1,10 +1,16 @@
 package com.fleetmanager.auth.repository;
 
-import com.fleetmanager.auth.entity.Tenant;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-@Repository
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.fleetmanager.auth.entity.Tenant;
+
 public interface TenantRepository extends JpaRepository<Tenant, Long> {
-    // TODO: Add custom query methods
+
+    Optional<Tenant> findBySubdomain(String subdomain);
+
+    boolean existsBySubdomain(String subdomain);
 }
