@@ -11,12 +11,16 @@ spring:
         - id: fleet-service
           uri: lb://FLEET-SERVICE
           predicates:
-            - Path=/api/fleet/**
+            - Path=/api/dashboard/**, /api/vehicles/**, /api/trips/**, /api/drivers/**
 
 eureka:
   client:
     service-url:
       defaultZone: http://eureka-user:${EUREKA_PASSWORD:secret}@localhost:8761/eureka/
+  instance:
+    preferIpAddress: true
+    lease-renewal-interval-in-seconds: 30
+
 
 server:
   port: 8080
