@@ -15,6 +15,14 @@
     <name>TrackStar Parent</name>
     <description>Parent POM for TrackStar Fleet Management SaaS</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
     <modules>
         <module>common</module>
         <module>eureka-server</module>
