@@ -1,6 +1,6 @@
 package com.fleetmanager.auth.entity;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,7 @@ public class Tenant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @NotBlank
     @Column(nullable = false, length = 100)
     private String name;
     
@@ -36,11 +38,11 @@ public class Tenant {
     private boolean active = true;
     
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
     
     @PrePersist
     protected void onCreate() {
-		this.createdAt = LocalDate.now();
+		this.createdAt = LocalDateTime.now();
     }
     
     
