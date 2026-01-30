@@ -13,9 +13,12 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Safety: Do not deploy if the Docker build failed
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
+      
       - name: Deploy to Cloud
         run: |
           echo "Deploying to $CLOUD_PROVIDER in $REGION"
-          # Add deployment commands here
+          # Add your specific deployment commands here
