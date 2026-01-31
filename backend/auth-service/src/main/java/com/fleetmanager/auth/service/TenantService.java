@@ -41,7 +41,7 @@ public class TenantService {
         // - Associating the User with the saved Tenant
 
         // 4. Return tenant details
-        // Note: adminUserId and token will be null until the User logic is implemented
+        // Note: adminUserId and token will be null until the User logic is implementedd
         return TenantRegistrationResponse.builder()
                 .tenantId(tenant.getId())
                 .adminUserId(null) // Placeholder until User is created
