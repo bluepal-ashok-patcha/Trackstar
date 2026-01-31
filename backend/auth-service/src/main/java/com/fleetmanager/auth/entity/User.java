@@ -5,6 +5,7 @@ import com.fleetmanager.auth.enums.UserStatus;
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "users", uniqueConstraints = {
@@ -14,7 +15,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class User extends TenantAwareEntity {
 
     @Id
