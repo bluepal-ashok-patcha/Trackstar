@@ -3,9 +3,17 @@ package com.fleetmanager.auth.service;
 import com.fleetmanager.auth.dto.request.TenantRegistrationDTO;
 import com.fleetmanager.auth.dto.response.TenantRegistrationResponse;
 import com.fleetmanager.auth.entity.Tenant;
+import com.fleetmanager.auth.entity.User;
+import com.fleetmanager.auth.enums.Role;
+import com.fleetmanager.auth.enums.UserStatus;
 import com.fleetmanager.auth.exception.SubdomainAlreadyExistsException;
 import com.fleetmanager.auth.repository.TenantRepository;
+import com.fleetmanager.auth.repository.UserRepository;
+import com.fleetmanager.auth.util.JwtUtil;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,38 +22,46 @@ import org.springframework.transaction.annotation.Transactional;
 public class TenantService {
 
     private final TenantRepository tenantRepository;
-    
-    // NOTE: Dependencies for User, PasswordEncoder, and JwtService will be injected in the next task.
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil; // ⭐ ADD THIS
 
     @Transactional
     public TenantRegistrationResponse registerTenant(TenantRegistrationDTO request) {
-        // 1. Check subdomain uniqueness
+
+        // 1️⃣ Check subdomain uniqueness
         if (tenantRepository.existsBySubdomain(request.getSubdomain())) {
-            throw new SubdomainAlreadyExistsException("Subdomain '" + request.getSubdomain() + "' is already taken.");
+            throw new SubdomainAlreadyExistsException(
+                    "Subdomain '" + request.getSubdomain() + "' is already taken.");
         }
 
-        // 2. Create tenant
+        // 2️⃣ Create tenant
         Tenant tenant = new Tenant();
         tenant.setName(request.getOrganizationName());
         tenant.setSubdomain(request.getSubdomain());
         tenant.setActive(true);
-        
+
         tenant = tenantRepository.save(tenant);
 
-        // 3. Create admin user (Pending Task)
-        // TODO: Implement logic to create the Admin User entity here.
-        // This will involve:
-        // - Creating a User object
-        // - Encoding the password
-        // - Setting the Role to ROLE_ADMIN
-        // - Associating the User with the saved Tenant
+        // 3️⃣ Create Admin User
+        User adminUser = new User();
+        adminUser.setEmail(request.getAdminEmail());
+        adminUser.setName(request.getAdminName());
+        adminUser.setTenantId(tenant.getId());
+        adminUser.setRole(Role.ADMIN);
+        adminUser.setStatus(UserStatus.ACTIVE);
+        adminUser.setPasswordHash(passwordEncoder.encode(request.getAdminPassword()));
 
-        // 4. Return tenant details
-        // Note: adminUserId and token will be null until the User logic is implemented
+        adminUser = userRepository.save(adminUser);
+
+        // ⭐ 4️⃣ Generate JWT Token
+        String token = jwtUtil.generateToken(adminUser);
+
+        // 5️⃣ Return response
         return TenantRegistrationResponse.builder()
                 .tenantId(tenant.getId())
-                .adminUserId(null) // Placeholder until User is created
-                .token(null)       // Placeholder until JWT is generated
+                .adminUserId(adminUser.getId())
+                .token(token) // ⭐ NOW TOKEN IS RETURNED
                 .build();
     }
 }

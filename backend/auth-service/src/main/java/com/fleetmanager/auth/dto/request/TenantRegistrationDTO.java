@@ -26,6 +26,9 @@ public class TenantRegistrationDTO {
     @Pattern(regexp = "^[a-z0-9]+(-[a-z0-9]+)*$", message = "Subdomain must be lowercase, alphanumeric, and may contain hyphens")
     @Schema(example = "global-logistics", description = "The unique URL prefix for the tenant")
     private String subdomain;
+    
+    @NotBlank(message = "Admin name is required")   // ⭐ ADD THIS
+    private String adminName;
 
     @NotBlank(message = "Admin email is required")
     @Email(message = "Invalid email format")
@@ -36,4 +39,5 @@ public class TenantRegistrationDTO {
     @Size(min = 8, message = "Password must be at least 8 characters")
     @Schema(example = "Str0ngP@ss123", description = "Secure password for the admin account")
     private String adminPassword;
+  
 }
