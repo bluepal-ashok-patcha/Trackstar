@@ -65,6 +65,7 @@ class TenantRegistrationIntegrationTest {
         {
           "organizationName": "Fleet Corporation",
           "subdomain": "fleetcorp",
+          "adminName": "Fleet Admin",
           "adminEmail": "admin@fleetcorp.com",
           "adminPassword": "StrongPass123"
         }
@@ -74,6 +75,7 @@ class TenantRegistrationIntegrationTest {
         {
           "organizationName": "Another Corp",
           "subdomain": "fleetcorp",
+          "adminName": "Another Admin",
           "adminEmail": "another@corp.com",
           "adminPassword": "StrongPass123"
         }
@@ -83,6 +85,7 @@ class TenantRegistrationIntegrationTest {
         {
           "organizationName": "",
           "subdomain": "",
+          "adminName": "",
           "adminEmail": "",
           "adminPassword": ""
         }
@@ -96,17 +99,13 @@ class TenantRegistrationIntegrationTest {
          executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void givenValidRequest_whenRegisterTenant_thenCreated() throws Exception {
 
-        // -------- Given --------
-        String request = VALID_REQUEST;
-
-        // -------- When --------
-        var result = mockMvc.perform(post("/api/auth/register-tenant")
+        mockMvc.perform(post("/api/auth/register-tenant")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(request));
-
-        // -------- Then --------
-        result.andExpect(status().isCreated())
-              .andExpect(jsonPath("$.tenantId").exists());
+                .content(VALID_REQUEST))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.tenantId").exists())
+                .andExpect(jsonPath("$.adminUserId").exists())
+                .andExpect(jsonPath("$.token").exists());
     }
 
     // ======================================================
@@ -117,27 +116,18 @@ class TenantRegistrationIntegrationTest {
          executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void givenDuplicateSubdomain_whenRegisterTenant_thenConflict() throws Exception {
 
-        // -------- Given --------
-        String firstRequest = VALID_REQUEST;
-        String duplicateRequest = DUPLICATE_REQUEST;
-
-        // -------- When --------
-        // First tenant creation (should be created)
+        // First request should succeed
         mockMvc.perform(post("/api/auth/register-tenant")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(firstRequest))
+                .content(VALID_REQUEST))
                 .andExpect(status().isCreated());
 
-        // Second tenant creation with same subdomain
-        var result = mockMvc.perform(post("/api/auth/register-tenant")
+        // Second request with same subdomain should fail with 409
+        mockMvc.perform(post("/api/auth/register-tenant")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(duplicateRequest));
-
-        // -------- Then --------
-        // Expect 409 Conflict because subdomain already exists
-        result.andExpect(status().isConflict());
+                .content(DUPLICATE_REQUEST))
+                .andExpect(status().isConflict());
     }
-
 
     // ======================================================
     // 3) VALIDATION ERROR CASE
@@ -147,15 +137,9 @@ class TenantRegistrationIntegrationTest {
          executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void givenInvalidRequest_whenRegisterTenant_thenBadRequest() throws Exception {
 
-        // -------- Given --------
-        String invalidRequest = INVALID_REQUEST;
-
-        // -------- When --------
-        var result = mockMvc.perform(post("/api/auth/register-tenant")
+        mockMvc.perform(post("/api/auth/register-tenant")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(invalidRequest));
-
-        // -------- Then --------
-        result.andExpect(status().isBadRequest());
+                .content(INVALID_REQUEST))
+                .andExpect(status().isBadRequest());
     }
 }
