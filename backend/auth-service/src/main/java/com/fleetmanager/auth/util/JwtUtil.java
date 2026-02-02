@@ -54,6 +54,11 @@ public class JwtUtil {
     public String extractRole(String token) {
         return extractClaims(token).get("role", String.class);
     }
+    
+    public Date extractExpiration(String token) {
+        return extractClaims(token).getExpiration();
+    }
+
 
     public boolean validateToken(String token) {
         try {
