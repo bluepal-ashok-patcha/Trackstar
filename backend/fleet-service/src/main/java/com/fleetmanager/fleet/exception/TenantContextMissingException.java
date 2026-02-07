@@ -1,4 +1,4 @@
-package com.fleetmanager.auth.exception;
+package com.fleetmanager.fleet.exception;
 
 public class TenantContextMissingException extends RuntimeException {
     public TenantContextMissingException() {

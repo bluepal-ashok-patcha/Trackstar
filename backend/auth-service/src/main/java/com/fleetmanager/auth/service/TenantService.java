@@ -1,5 +1,6 @@
 package com.fleetmanager.auth.service;
 
+import com.fleetmanager.auth.context.TenantContext;
 import com.fleetmanager.auth.dto.request.TenantRegistrationDTO;
 import com.fleetmanager.auth.dto.response.TenantRegistrationResponse;
 import com.fleetmanager.auth.entity.Tenant;
@@ -43,11 +44,13 @@ public class TenantService {
 
         tenant = tenantRepository.save(tenant);
 
+        
+     //  Create Admin User
+        TenantContext.setCurrentTenantId(tenant.getId());
         // 3️⃣ Create Admin User
         User adminUser = new User();
         adminUser.setEmail(request.getAdminEmail());
         adminUser.setName(request.getAdminName());
-        adminUser.setTenantId(tenant.getId());
         adminUser.setRole(Role.ADMIN);
         adminUser.setStatus(UserStatus.ACTIVE);
         adminUser.setPasswordHash(passwordEncoder.encode(request.getAdminPassword()));

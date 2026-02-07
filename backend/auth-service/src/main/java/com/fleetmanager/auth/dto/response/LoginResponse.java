@@ -1,20 +1,27 @@
 package com.fleetmanager.auth.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Login response containing JWT token and user info")
 public class LoginResponse {
 
-	private String token;
-	private Long userId;
-	private String email;
-	private String role;
-	private Long tenantId;
+    @Schema(example = "eyJhbGciOiJIUzI1NiIs...")
+    private String token;
 
+    @Schema(example = "1")
+    private Long userId;
+
+    @Schema(example = "admin@company.com")
+    private String email;
+
+    @Schema(example = "ADMIN")
+    private String role;
+
+    @Schema(example = "101")
+    private Long tenantId;
 }

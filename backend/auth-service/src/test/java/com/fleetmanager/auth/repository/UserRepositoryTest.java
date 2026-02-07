@@ -17,6 +17,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import com.fleetmanager.auth.context.TenantContext;
 import com.fleetmanager.auth.entity.Tenant;
 import com.fleetmanager.auth.entity.User;
 import com.fleetmanager.auth.enums.Role;
@@ -44,7 +45,6 @@ class UserRepositoryTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
 
-        // Flyway handles schema
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
 
         registry.add("spring.flyway.enabled", () -> "true");
@@ -68,14 +68,11 @@ class UserRepositoryTest {
     // ---------------------------
 
     private Long createTenant(String name, String subdomain) {
-
-        Tenant tenant = Tenant.builder()
-                .name(name)
-                .subdomain(subdomain)
-                .active(true)
-                .build();
-
-        return tenantRepository.save(tenant).getId();
+        Tenant tenant = new Tenant();
+        tenant.setName(name);
+        tenant.setSubdomain(subdomain);
+        tenant.setActive(true);
+        return tenantRepository.saveAndFlush(tenant).getId();
     }
 
     // ==========================================================
@@ -86,23 +83,23 @@ class UserRepositoryTest {
     @DisplayName("Should automatically set createdAt timestamp when user is saved")
     void shouldSetCreatedAtWhenUserIsSaved() {
 
-        // GIVEN — Tenant exists
         Long tenantId = createTenant("Fleet Corp", "fleet");
 
-        User user = User.builder()
-                .email("timestamp@test.com")
-                .passwordHash("password")
-                .name("Timestamp User")
-                .role(Role.ADMIN)
-                .tenantId(tenantId)
-                .build();
+        TenantContext.setCurrentTenantId(tenantId);
+        try {
+            User user = new User();
+            user.setEmail("timestamp@test.com");
+            user.setPasswordHash("password");
+            user.setName("Timestamp User");
+            user.setRole(Role.ADMIN);
 
-        // WHEN — User is saved
-        User savedUser = userRepository.save(user);
+            User savedUser = userRepository.save(user);
 
-        // THEN — createdAt should be populated
-        assertThat(savedUser.getCreatedAt()).isNotNull();
-        assertThat(savedUser.getCreatedAt()).isBeforeOrEqualTo(LocalDateTime.now());
+            assertThat(savedUser.getCreatedAt()).isNotNull();
+            assertThat(savedUser.getCreatedAt()).isBeforeOrEqualTo(LocalDateTime.now());
+        } finally {
+            TenantContext.clear();
+        }
     }
 
     // ==========================================================
@@ -111,31 +108,30 @@ class UserRepositoryTest {
     @DisplayName("Should NOT allow duplicate email in same tenant")
     void shouldNotAllowDuplicateEmailInSameTenant() {
 
-        // GIVEN — Tenant exists
         Long tenantId = createTenant("Tenant One", "tenant1");
 
-        User firstUser = User.builder()
-                .email("duplicate@test.com")
-                .passwordHash("pass1")
-                .name("User One")
-                .role(Role.MANAGER)
-                .tenantId(tenantId)
-                .build();
+        TenantContext.setCurrentTenantId(tenantId);
+        try {
+            User firstUser = new User();
+            firstUser.setEmail("duplicate@test.com");
+            firstUser.setPasswordHash("pass1");
+            firstUser.setName("User One");
+            firstUser.setRole(Role.MANAGER);
 
-        userRepository.saveAndFlush(firstUser);
+            userRepository.saveAndFlush(firstUser);
 
-        User duplicateUser = User.builder()
-                .email("duplicate@test.com") // same email
-                .passwordHash("pass2")
-                .name("User Two")
-                .role(Role.MANAGER)
-                .tenantId(tenantId) // same tenant
-                .build();
+            User duplicateUser = new User();
+            duplicateUser.setEmail("duplicate@test.com");
+            duplicateUser.setPasswordHash("pass2");
+            duplicateUser.setName("User Two");
+            duplicateUser.setRole(Role.MANAGER);
 
-        // WHEN + THEN — Expect DB constraint violation
-        assertThrows(Exception.class, () -> {
-            userRepository.saveAndFlush(duplicateUser);
-        });
+            assertThrows(Exception.class, () ->
+                    userRepository.saveAndFlush(duplicateUser)
+            );
+        } finally {
+            TenantContext.clear();
+        }
     }
 
     // ==========================================================
@@ -146,31 +142,27 @@ class UserRepositoryTest {
     @DisplayName("Should allow same email for different tenants")
     void shouldAllowSameEmailForDifferentTenants() {
 
-        // GIVEN — Two tenants
         Long tenant1 = createTenant("Tenant A", "a");
         Long tenant2 = createTenant("Tenant B", "b");
 
-        User tenant1User = User.builder()
-                .email("shared@test.com")
-                .passwordHash("pass1")
-                .name("Tenant1 User")
-                .role(Role.DRIVER)
-                .tenantId(tenant1)
-                .build();
-
-        User tenant2User = User.builder()
-                .email("shared@test.com") // same email
-                .passwordHash("pass2")
-                .name("Tenant2 User")
-                .role(Role.DRIVER)
-                .tenantId(tenant2) // different tenant
-                .build();
-
-        // WHEN
+        TenantContext.setCurrentTenantId(tenant1);
+        User tenant1User = new User();
+        tenant1User.setEmail("shared@test.com");
+        tenant1User.setPasswordHash("pass1");
+        tenant1User.setName("Tenant1 User");
+        tenant1User.setRole(Role.DRIVER);
         userRepository.save(tenant1User);
-        userRepository.save(tenant2User);
+        TenantContext.clear();
 
-        // THEN
+        TenantContext.setCurrentTenantId(tenant2);
+        User tenant2User = new User();
+        tenant2User.setEmail("shared@test.com");
+        tenant2User.setPasswordHash("pass2");
+        tenant2User.setName("Tenant2 User");
+        tenant2User.setRole(Role.DRIVER);
+        userRepository.save(tenant2User);
+        TenantContext.clear();
+
         assertThat(userRepository.count()).isEqualTo(2);
     }
 
@@ -180,36 +172,37 @@ class UserRepositoryTest {
     @DisplayName("Find by email and tenant should return correct user")
     void findByEmailAndTenantIdShouldReturnCorrectUser() {
 
-        // GIVEN — Two tenants
         Long tenant1 = createTenant("Tenant X", "x");
         Long tenant2 = createTenant("Tenant Y", "y");
 
-        User tenant1User = User.builder()
-                .email("lookup@test.com")
-                .passwordHash("pass1")
-                .name("Tenant1 User")
-                .role(Role.MANAGER)
-                .tenantId(tenant1)
-                .build();
-
-        User tenant2User = User.builder()
-                .email("lookup@test.com")
-                .passwordHash("pass2")
-                .name("Tenant2 User")
-                .role(Role.MANAGER)
-                .tenantId(tenant2)
-                .build();
-
+        TenantContext.setCurrentTenantId(tenant1);
+        User tenant1User = new User();
+        tenant1User.setEmail("lookup@test.com");
+        tenant1User.setPasswordHash("pass1");
+        tenant1User.setName("Tenant1 User");
+        tenant1User.setRole(Role.MANAGER);
         userRepository.save(tenant1User);
+        TenantContext.clear();
+
+        TenantContext.setCurrentTenantId(tenant2);
+        User tenant2User = new User();
+        tenant2User.setEmail("lookup@test.com");
+        tenant2User.setPasswordHash("pass2");
+        tenant2User.setName("Tenant2 User");
+        tenant2User.setRole(Role.MANAGER);
         userRepository.save(tenant2User);
+        TenantContext.clear();
 
-        // WHEN
-        Optional<User> result =
-                userRepository.findByEmailAndTenantId("lookup@test.com", tenant1);
+        TenantContext.setCurrentTenantId(tenant1);
+        try {
+            Optional<User> result =
+                    userRepository.findByEmailAndTenantId("lookup@test.com", tenant1);
 
-        // THEN
-        assertThat(result).isPresent();
-        assertThat(result.get().getTenantId()).isEqualTo(tenant1);
-        assertThat(result.get().getName()).isEqualTo("Tenant1 User");
+            assertThat(result).isPresent();
+            assertThat(result.get().getTenantId()).isEqualTo(tenant1);
+            assertThat(result.get().getName()).isEqualTo("Tenant1 User");
+        } finally {
+            TenantContext.clear();
+        }
     }
 }

@@ -23,7 +23,18 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
-    // ⭐ ADD THIS
+  
+    @ExceptionHandler(TenantContextMissingException.class)
+    public ResponseEntity<Map<String, String>> handleTenantMissing(TenantContextMissingException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Unauthorized");
+        error.put("message", ex.getMessage());
+        error.put("timestamp", LocalDateTime.now().toString());
+        error.put("status", String.valueOf(HttpStatus.UNAUTHORIZED.value()));
+
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<Map<String, String>> handleInvalidCredentials(InvalidCredentialsException ex) {
         Map<String, String> error = new HashMap<>();

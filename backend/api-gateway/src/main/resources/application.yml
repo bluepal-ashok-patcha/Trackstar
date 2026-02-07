@@ -1,28 +1,56 @@
 spring:
   application:
     name: api-gateway
+
   cloud:
     gateway:
       discovery:
         locator:
           enabled: true
           lowerCaseServiceId: true
-          
+
       httpclient:
         connect-timeout: 5000
         response-timeout: 5s
+
       default-filters:
         - RequestLogging # Applies the filter from Task 5 to all requests
-        
+
       routes:
+        # ================= EXISTING ROUTES =================
         - id: auth-service
-          uri: lb://AUTH-SERVICE
+          uri: lb://auth-service
           predicates:
             - Path=/api/auth/**
+
         - id: fleet-service
-          uri: lb://FLEET-SERVICE
+          uri: lb://fleet-service
           predicates:
             - Path=/api/dashboard/**, /api/vehicles/**, /api/trips/**, /api/drivers/**
+
+
+        # ================= ADDED SWAGGER ROUTES =================
+
+        # Swagger UI for Auth Service
+        - id: auth-swagger-ui
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/swagger-ui/**, /auth/swagger-ui.html
+          filters:
+            - StripPrefix=1
+
+        # Auth API Docs
+        - id: auth-api-docs
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/v3/api-docs/**
+          filters:
+            - StripPrefix=1
+
+        - id: auth-api-docs-root
+          uri: lb://auth-service
+          predicates:
+            - Path=/v3/api-docs/**
 
 eureka:
   client:
@@ -32,6 +60,12 @@ eureka:
     preferIpAddress: true
     lease-renewal-interval-in-seconds: 30
 
+cors:
+  allowed-origins: ${FRONTEND_ORIGIN:http://localhost:3000}
+
+
+jwt:
+ secret: ${JWT_SECRET:YWHx2ms0eGJhYlN6TkJqbENBblUyTktWbEZka3NaNElvNkliZlJ3czZ1skhqbdjqw}
 
 server:
   port: 8080
